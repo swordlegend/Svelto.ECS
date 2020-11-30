@@ -55,6 +55,8 @@ namespace Svelto.ECS
             _groupsPerEntity =
                 new FasterDictionary<RefWrapperType, FasterDictionary<ExclusiveGroupStruct, ITypeSafeDictionary>>();
             _groupedEntityToAdd = new DoubleBufferedEntitiesToAdd();
+            _entityLocatorMap = new FasterList<EntityLocatorMapElement>();
+            _egidToLocatorMap = new FasterDictionary<uint, FasterDictionary<uint, EntityReference>>();
 
             _entityStreams = EntitiesStreams.Create();
             _groupFilters =
@@ -88,7 +90,7 @@ namespace Svelto.ECS
             {
                 //Note: The engines are disposed before the the remove callback to give the chance to behave
                 //differently if a remove happens as a consequence of a dispose
-                //The pattern is to implement the IDisposable interface and set a flag in the engine. The 
+                //The pattern is to implement the IDisposable interface and set a flag in the engine. The
                 //remove callback will then behave differently according the flag.
                 foreach (var engine in _disposableEngines)
                 {
@@ -154,6 +156,10 @@ namespace Svelto.ECS
                 _transientEntitiesOperations.Clear();
 
                 _groupedEntityToAdd.Dispose();
+
+                _entityLocatorMap.Clear();
+                _egidToLocatorMap.Clear();
+
                 _entityStreams.Dispose();
                 scheduler.Dispose();
             }
