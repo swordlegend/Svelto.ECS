@@ -1,9 +1,10 @@
+using Svelto.Common;
+using Svelto.ECS.Internal;
+
 namespace Svelto.ECS.Serialization
 {
-    public class DefaultSerializer<T> : IComponentSerializer<T> where T : unmanaged, IEntityComponent
+    public class DefaultSerializer<T> : IComponentSerializer<T> where T : unmanaged, _IInternalEntityComponent
     {
-        static readonly uint SIZEOFT = SerializableComponentBuilder<T>.SIZE;
-
         static DefaultSerializer()
         {
             var _type = typeof(T);
@@ -15,19 +16,20 @@ namespace Svelto.ECS.Serialization
                     field.IsPrivate == false)
                     throw new ECSException($"field cannot be serialised {fieldFieldType} in {_type.FullName}");
             }
-
+#if SLOW_SVELTO_SUBMISSION            
             if (_type.GetProperties().Length > (ComponentBuilder<T>.HAS_EGID ? 1 : 0))
                 throw new ECSException("serializable entity struct must be property less ".FastConcat(_type.FullName));
+#endif
         }
 
-        public uint size => SIZEOFT;
+        public uint size => (uint)MemoryUtilities.SizeOf<T>();
 
         public bool Serialize(in T value, ISerializationData serializationData)
         {
             DefaultSerializerUtils.CopyToByteArray(value, serializationData.data.ToArrayFast(out _),
                 serializationData.dataPos);
 
-            serializationData.dataPos += SIZEOFT;
+            serializationData.dataPos += (uint)size;
 
             return true;
         }
@@ -37,7 +39,7 @@ namespace Svelto.ECS.Serialization
             value = DefaultSerializerUtils.CopyFromByteArray<T>(serializationData.data.ToArrayFast(out _),
                 serializationData.dataPos);
 
-            serializationData.dataPos += SIZEOFT;
+            serializationData.dataPos += (uint)size;
 
             return true;
         }

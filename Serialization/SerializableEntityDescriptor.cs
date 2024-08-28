@@ -16,13 +16,12 @@ namespace Svelto.ECS.Serialization
     {
         static SerializableEntityDescriptor()
         {
-            IComponentBuilder[] defaultEntities = EntityDescriptorTemplate<TType>.descriptor.componentsToBuild;
+            IComponentBuilder[] defaultEntities = EntityDescriptorTemplate<TType>.realDescriptor.componentsToBuild;
 
             var hashNameAttribute = Type.GetCustomAttribute<HashNameAttribute>();
             if (hashNameAttribute == null)
             {
-                throw new Exception(
-                    "HashName attribute not found on the serializable type ".FastConcat(Type.FullName));
+                throw new Exception("HashName attribute not found on the serializable type ".FastConcat(Type.FullName));
             }
 
             Hash = DesignatedHash.Hash(Encoding.ASCII.GetBytes(hashNameAttribute._name));
@@ -50,13 +49,12 @@ namespace Svelto.ECS.Serialization
 
             /////
             var entitiesToSerialize = new FasterList<ISerializableComponentBuilder>();
-            EntityComponentsToSerializeMap = new FasterDictionary<RefWrapperType, ISerializableComponentBuilder>();
+            EntityComponentsToSerializeMap = new FasterDictionary<ComponentID, ISerializableComponentBuilder>();
             foreach (IComponentBuilder e in defaultEntities)
             {
                 if (e is ISerializableComponentBuilder serializableEntityBuilder)
                 {
-                    var entityType = serializableEntityBuilder.GetEntityComponentType();
-                    EntityComponentsToSerializeMap[new RefWrapperType(entityType)] = serializableEntityBuilder;
+                    EntityComponentsToSerializeMap[serializableEntityBuilder.getComponentID] = serializableEntityBuilder;
                     entitiesToSerialize.Add(serializableEntityBuilder);
                 }
             }
@@ -97,11 +95,11 @@ namespace Svelto.ECS.Serialization
         public IComponentBuilder[]             componentsToBuild   => ComponentsToBuild;
         public uint                            hash                => Hash;
         public Type                            realType            => Type;
-        public ISerializableComponentBuilder[] entitiesToSerialize => EntitiesToSerialize;
+        public ISerializableComponentBuilder[] componentsToSerialize => EntitiesToSerialize;
 
-        static readonly IComponentBuilder[]                                               ComponentsToBuild;
-        static readonly FasterDictionary<RefWrapperType, ISerializableComponentBuilder> EntityComponentsToSerializeMap;
-        static readonly ISerializableComponentBuilder[]                                   EntitiesToSerialize;
+        static readonly IComponentBuilder[]                                             ComponentsToBuild;
+        static readonly FasterDictionary<ComponentID, ISerializableComponentBuilder> EntityComponentsToSerializeMap;
+        static readonly ISerializableComponentBuilder[]                                 EntitiesToSerialize;
 
         static readonly uint Hash;
         static readonly Type SerializableStructType = typeof(SerializableEntityComponent);

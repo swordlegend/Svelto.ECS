@@ -1,30 +1,27 @@
-using System.Collections.Generic;
 using Svelto.Common;
 
 namespace Svelto.ECS.Serialization
 {
-    public class DefaultVersioningFactory<T> : IDeserializationFactory where T : IEntityDescriptor, new()
+    //TODO: Unit test. Delete this comment once Unit test is written
+#if ENABLE_IL2CPP
+    [UnityEngine.Scripting.Preserve]
+#endif    
+    public class DefaultVersioningFactory<T> : IDeserializationFactory where T : ISerializableEntityDescriptor, new()
     {
-        readonly IEnumerable<object> _implementors;
-
-        public DefaultVersioningFactory() {}
-
-        public DefaultVersioningFactory(IEnumerable<object> implementors)
+        public EntityInitializer BuildDeserializedEntity(EGID egid, ISerializationData serializationData,
+            ISerializableEntityDescriptor entityDescriptor, int serializationType,
+            IEntitySerialization entitySerialization, IEntityFactory factory, bool enginesRootIsDeserializationOnly)
         {
-            _implementors = implementors;
-        }
+            var newEntityDescriptor = EntityDescriptorTemplate<T>.realDescriptor as  ISerializableEntityDescriptor;
+                    
+            var entityDescriptorEntitiesToSerialize = enginesRootIsDeserializationOnly
+                ? newEntityDescriptor.componentsToSerialize
+                : newEntityDescriptor.componentsToBuild;
 
-        public EntityComponentInitializer BuildDeserializedEntity
-        (EGID egid, ISerializationData serializationData, ISerializableEntityDescriptor entityDescriptor
-       , int serializationType, IEntitySerialization entitySerialization, IEntityFactory factory
-       , bool enginesRootIsDeserializationOnly)
-        {
-            var entityDescriptorEntitiesToSerialize = enginesRootIsDeserializationOnly ? entityDescriptor.entitiesToSerialize : entityDescriptor.componentsToBuild;
+            var initializer = (factory as IEntitySerializationFactory).BuildEntity(egid, entityDescriptorEntitiesToSerialize, TypeCache<T>.type);
 
-            var initializer = factory.BuildEntity(egid, entityDescriptorEntitiesToSerialize, TypeCache<T>.type, _implementors);
-
-            entitySerialization.DeserializeEntityComponents(serializationData, entityDescriptor, ref initializer
-                                                          , serializationType);
+            entitySerialization.DeserializeEntityComponents(serializationData, entityDescriptor, ref initializer,
+                serializationType);
 
             return initializer;
         }

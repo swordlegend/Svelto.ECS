@@ -1,3 +1,5 @@
+using Svelto.ECS.Serialization;
+
 namespace Svelto.ECS
 {
     public partial class EnginesRoot
@@ -31,19 +33,19 @@ namespace Svelto.ECS
                      | serializationData.data[serializationData.dataPos++] << 24);
 
                 uint groupID = (uint)
-                    (serializationData.data[serializationData.dataPos++]
+                    (serializationData.data[serializationData.dataPos++]    
                      | serializationData.data[serializationData.dataPos++] << 8
-                     | serializationData.data[serializationData.dataPos++] << 16
-                     | serializationData.data[serializationData.dataPos++] << 24);
+                     | serializationData.data[serializationData.dataPos++] << 16);
+                var byteMask = serializationData.data[serializationData.dataPos++];
 
                 entityComponentsCount = serializationData.data[serializationData.dataPos++];
 
-                egid = new EGID(entityID, new ExclusiveGroupStruct(groupID));
+                egid = new EGID(entityID, new ExclusiveGroupStruct(groupID, byteMask));
             }
 
             internal void Copy(ISerializationData serializationData)
             {
-                serializationData.data.ExpandBy(SIZE);
+                serializationData.data.IncrementCountBy(SIZE);
 
                 // Splitting the descriptorHash_ (uint, 32 bit) into four bytes.
                 serializationData.data[serializationData.dataPos++] = (byte) (descriptorHash & 0xff);
@@ -59,7 +61,7 @@ namespace Svelto.ECS
                 serializationData.data[serializationData.dataPos++] = (byte) ((entityID >> 24) & 0xff);
 
                 // Splitting the groupID (uint, 32 bit) into four bytes.
-                uint groupID = egid.groupID;
+                var groupID = egid.groupID.ToIDAndBitmask();
                 serializationData.data[serializationData.dataPos++] = (byte) (groupID & 0xff);
                 serializationData.data[serializationData.dataPos++] = (byte) ((groupID >> 8) & 0xff);
                 serializationData.data[serializationData.dataPos++] = (byte) ((groupID >> 16) & 0xff);

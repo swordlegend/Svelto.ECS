@@ -1,8 +1,8 @@
-#if UNITY_2019_2_OR_NEWER
+#if UNITY_JOBS
 using System;
 using Unity.Jobs;
 
-namespace Svelto.ECS.Extensions.Unity
+namespace Svelto.ECS.SveltoOnDOTS
 {
     public struct DisposeJob<T>:IJob where T:struct,IDisposable
     {

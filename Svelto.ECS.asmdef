@@ -1,10 +1,11 @@
 {
     "name": "Svelto.ECS",
+    "rootNamespace": "",
     "references": [
-        "Unity.Entities",
         "Unity.Collections",
         "Unity.Burst",
-        "Unity.Jobs",
+        "Unity.Entities",
+        "Unity.Mathematics",
         "Svelto.Common"
     ],
     "includePlatforms": [],
@@ -18,9 +19,9 @@
     "defineConstraints": [],
     "versionDefines": [
         {
-            "name": "com.unity.entities",
-            "expression": "",
-            "define": "UNITY_ECS"
+            "name": "Unity",
+            "expression": "2019.3",
+            "define": "UNITY_JOBS"
         },
         {
             "name": "com.unity.burst",
@@ -33,11 +34,6 @@
             "define": "UNITY_COLLECTIONS"
         },
         {
-            "name": "com.unity.entities",
-            "expression": "",
-            "define": "UNITY_NATIVE"
-        },
-        {
             "name": "com.unity.burst",
             "expression": "",
             "define": "UNITY_NATIVE"
@@ -48,9 +44,19 @@
             "define": "UNITY_NATIVE"
         },
         {
-            "name": "com.unity.jobs",
+            "name": "com.unity.entities",
             "expression": "",
-            "define": "UNITY_JOBS"
+            "define": "UNITY_ECS"
+        },
+        {
+            "name": "com.unity.entities",
+            "expression": "0.90",
+            "define": "UNITY_ECS_100"
+        },
+        {
+            "name": "com.unity.entities",
+            "expression": "",
+            "define": "UNITY_NATIVE"
         }
     ],
     "noEngineReferences": false
